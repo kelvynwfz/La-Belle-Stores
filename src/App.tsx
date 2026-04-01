@@ -107,80 +107,116 @@ const Logo = ({ className = "w-16 h-16" }: { className?: string }) => (
 
 const Navbar = ({ onNavigate, currentPage }: { onNavigate: (p: Page) => void, currentPage: Page }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-brand-black/80 backdrop-blur-md border-b border-brand-white/5">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+      scrolled ? 'bg-brand-black/90 backdrop-blur-xl py-3 border-b border-brand-white/5' : 'bg-transparent py-6'
+    }`}>
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <button 
           onClick={() => onNavigate('home')}
           className="flex items-center gap-3 group"
         >
-          <Logo className="w-12 h-12 transition-transform group-hover:scale-110" />
-          <span className="font-serif text-xl tracking-widest gold-text-gradient font-bold hidden sm:block">
-            LA BELLE
-          </span>
+          <Logo className="w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-110" />
+          <div className="flex flex-col">
+            <span className="font-serif text-lg md:text-xl tracking-[0.2em] gold-text-gradient font-bold leading-none">
+              LA BELLE
+            </span>
+            <span className="text-[8px] tracking-[0.6em] text-brand-white/40 uppercase mt-1">Stores</span>
+          </div>
         </button>
 
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-8">
           {['home', ...CATEGORIES.map(c => c.id)].map((item) => (
             <button
               key={item}
               onClick={() => onNavigate(item as Page)}
-              className={`text-[10px] uppercase tracking-[0.2em] transition-colors whitespace-nowrap ${
-                currentPage === item ? 'text-brand-gold' : 'text-brand-white/60 hover:text-brand-white'
+              className={`text-[10px] uppercase tracking-[0.3em] transition-all relative group py-2 ${
+                currentPage === item ? 'text-brand-gold font-bold' : 'text-brand-white/60 hover:text-brand-white'
               }`}
             >
               {item === 'home' ? 'Início' : CATEGORIES.find(c => c.id === item)?.title || item.replace('-', ' ')}
+              <span className={`absolute bottom-0 left-0 w-full h-px bg-brand-gold transition-transform duration-300 origin-left ${
+                currentPage === item ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+              }`} />
             </button>
           ))}
         </div>
 
         <button 
           onClick={() => setIsOpen(true)}
-          className="p-2 text-brand-white md:hidden"
+          className="flex items-center gap-2 group"
         >
-          <Menu size={24} />
+          <span className="text-[10px] uppercase tracking-[0.3em] text-brand-white/60 group-hover:text-brand-gold transition-colors hidden sm:block">Menu</span>
+          <div className="p-2 text-brand-white group-hover:text-brand-gold transition-colors">
+            <Menu size={24} />
+          </div>
         </button>
       </div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 bg-brand-black z-[60] flex flex-col p-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-brand-black/95 backdrop-blur-2xl z-[60] flex flex-col"
           >
-            <div className="flex justify-between items-center mb-12">
+            <div className="flex justify-between items-center p-8">
               <Logo className="w-16 h-16" />
-              <button onClick={() => setIsOpen(false)} className="p-2 text-brand-gold">
-                <X size={32} />
+              <button 
+                onClick={() => setIsOpen(false)} 
+                className="w-12 h-12 rounded-full border border-brand-white/10 flex items-center justify-center text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all"
+              >
+                <X size={24} />
               </button>
             </div>
-            <div className="flex flex-col gap-8">
-              {['home', ...CATEGORIES.map(c => c.id)].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => {
-                    onNavigate(item as Page);
-                    setIsOpen(false);
-                  }}
-                  className="font-serif text-3xl text-left text-brand-white hover:text-brand-gold transition-colors capitalize"
-                >
-                  {item === 'home' ? 'Início' : item.replace('-', ' ')}
-                </button>
-              ))}
+            
+            <div className="flex-1 overflow-y-auto px-8 py-12 flex flex-col justify-center">
+              <div className="flex flex-col gap-6">
+                {['home', ...CATEGORIES.map(c => c.id)].map((item, idx) => (
+                  <motion.button
+                    key={item}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    onClick={() => {
+                      onNavigate(item as Page);
+                      setIsOpen(false);
+                    }}
+                    className="group flex items-center justify-between"
+                  >
+                    <span className={`font-serif text-4xl md:text-6xl transition-all ${
+                      currentPage === item ? 'text-brand-gold italic' : 'text-brand-white/40 group-hover:text-brand-white'
+                    }`}>
+                      {item === 'home' ? 'Início' : CATEGORIES.find(c => c.id === item)?.title || item.replace('-', ' ')}
+                    </span>
+                    <ChevronRight className={`transition-transform duration-300 ${
+                      currentPage === item ? 'text-brand-gold scale-150 opacity-100' : 'text-brand-white/10 group-hover:text-brand-gold group-hover:translate-x-2 opacity-0 group-hover:opacity-100'
+                    }`} />
+                  </motion.button>
+                ))}
+              </div>
             </div>
-            <div className="mt-auto flex flex-col gap-6 border-t border-brand-white/10 pt-8">
-              <a href={`https://wa.me/${BRAND.whatsapp}`} className="flex items-center gap-4 text-brand-gold">
-                <MessageCircle size={20} />
-                <span className="text-sm tracking-widest uppercase">WhatsApp</span>
-              </a>
-              <a href="https://instagram.com/la.bellestores" className="flex items-center gap-4 text-brand-gold">
-                <Instagram size={20} />
-                <span className="text-sm tracking-widest uppercase">Instagram</span>
-              </a>
+
+            <div className="p-8 border-t border-brand-white/5 bg-brand-graphite/30">
+              <div className="grid grid-cols-2 gap-4">
+                <a href={`https://wa.me/${BRAND.whatsapp}`} className="flex flex-col gap-2 p-4 rounded-2xl bg-brand-white/5 hover:bg-brand-gold/10 transition-colors group">
+                  <MessageCircle size={20} className="text-brand-gold" />
+                  <span className="text-[10px] uppercase tracking-widest text-brand-white/40 group-hover:text-brand-gold">WhatsApp</span>
+                </a>
+                <a href={`https://instagram.com/${BRAND.instagram.replace('@', '')}`} className="flex flex-col gap-2 p-4 rounded-2xl bg-brand-white/5 hover:bg-brand-gold/10 transition-colors group">
+                  <Instagram size={20} className="text-brand-gold" />
+                  <span className="text-[10px] uppercase tracking-widest text-brand-white/40 group-hover:text-brand-gold">Instagram</span>
+                </a>
+              </div>
             </div>
           </motion.div>
         )}
@@ -190,52 +226,71 @@ const Navbar = ({ onNavigate, currentPage }: { onNavigate: (p: Page) => void, cu
 };
 
 const Hero = ({ onNavigate }: { onNavigate: (p: Page) => void }) => (
-  <section className="relative h-screen flex items-center justify-center overflow-hidden">
+  <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0 z-0">
-      <img 
+      <motion.img 
+        initial={{ scale: 1.2, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
         src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=1920" 
         alt="Luxury Fashion"
-        className="w-full h-full object-cover scale-105"
+        className="w-full h-full object-cover"
         referrerPolicy="no-referrer"
       />
-      <div className="absolute inset-0 bg-brand-black/60" />
+      <div className="absolute inset-0 bg-brand-black/70" />
       <div className="absolute inset-0 luxury-gradient" />
     </div>
 
-    <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+    <div className="relative z-10 max-w-4xl mx-auto px-6 pt-20 pb-32 text-center">
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="flex justify-center mb-8">
-          <Logo className="w-24 h-24 md:w-32 md:h-32" />
+        <div className="flex justify-center mb-10">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            <Logo className="w-28 h-28 md:w-40 md:h-40" />
+          </motion.div>
         </div>
-        <span className="text-brand-gold text-xs uppercase tracking-[0.4em] mb-6 block font-medium">
-          Premium Boutique
-        </span>
-        <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl mb-8 leading-[1.1] tracking-tight">
-          Elegância, estilo e <br />
-          <span className="italic gold-text-gradient">exclusividade.</span>
+        
+        <motion.span 
+          initial={{ opacity: 0, letterSpacing: "0.2em" }}
+          animate={{ opacity: 1, letterSpacing: "0.5em" }}
+          transition={{ delay: 0.5, duration: 1 }}
+          className="text-brand-gold text-[10px] md:text-xs uppercase mb-8 block font-bold"
+        >
+          Premium Digital Boutique
+        </motion.span>
+
+        <h1 className="font-serif text-5xl md:text-8xl mb-10 leading-[1.1] tracking-tight">
+          Sua melhor versão <br />
+          <span className="italic gold-text-gradient">começa aqui.</span>
         </h1>
-        <p className="text-brand-bege/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-          Looks, calçados e acessórios selecionados para transformar sua experiência de compra em algo sofisticado e memorável.
+
+        <p className="text-brand-bege/70 text-base md:text-xl mb-14 max-w-xl mx-auto font-light leading-relaxed px-4">
+          Curadoria exclusiva de moda e acessórios para quem não abre mão da sofisticação.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a 
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 px-4">
+          <motion.a 
+            whileTap={{ scale: 0.95 }}
             href={`https://wa.me/${BRAND.whatsapp}`}
-            className="w-full sm:w-auto bg-brand-gold text-brand-black px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-champagne transition-all flex items-center justify-center gap-2 group"
+            className="w-full sm:w-auto bg-brand-gold text-brand-black px-12 py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs shadow-2xl shadow-brand-gold/20 flex items-center justify-center gap-3 group transition-all hover:bg-brand-champagne"
           >
-            <MessageCircle size={18} />
-            Comprar pelo WhatsApp
-          </a>
-          <button 
+            <MessageCircle size={20} />
+            Comprar no WhatsApp
+          </motion.a>
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
             onClick={() => document.getElementById('categorias')?.scrollIntoView({ behavior: 'smooth' })}
-            className="w-full sm:w-auto border border-brand-white/20 text-brand-white px-10 py-5 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brand-white hover:text-brand-black transition-all"
+            className="w-full sm:w-auto border border-brand-white/10 bg-brand-white/5 backdrop-blur-sm text-brand-white px-12 py-6 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs hover:bg-brand-white hover:text-brand-black transition-all"
           >
-            Explorar Coleção
-          </button>
+            Ver Coleções
+          </motion.button>
         </div>
       </motion.div>
     </div>
@@ -243,26 +298,25 @@ const Hero = ({ onNavigate }: { onNavigate: (p: Page) => void }) => (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 1, duration: 1 }}
-      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      transition={{ delay: 1.5, duration: 1 }}
+      className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
     >
-      <span className="text-[10px] uppercase tracking-[0.3em] text-brand-white/40">Scroll</span>
-      <div className="w-px h-12 bg-gradient-to-b from-brand-gold to-transparent" />
+      <div className="w-px h-16 bg-gradient-to-b from-brand-gold to-transparent opacity-50" />
     </motion.div>
   </section>
 );
 
 const About = () => (
-  <section className="py-24 bg-brand-graphite relative overflow-hidden">
+  <section className="py-32 bg-brand-graphite relative overflow-hidden">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className="grid lg:grid-cols-2 gap-20 items-center">
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           className="relative"
         >
-          <div className="aspect-[4/5] rounded-2xl overflow-hidden">
+          <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl">
             <img 
               src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=800" 
               alt="Boutique Interior"
@@ -270,36 +324,41 @@ const About = () => (
               referrerPolicy="no-referrer"
             />
           </div>
-          <div className="absolute -bottom-8 -right-8 bg-brand-gold p-8 rounded-2xl hidden md:block">
-            <p className="text-brand-black font-serif text-2xl italic">"Qualidade em cada detalhe"</p>
-          </div>
+          <motion.div 
+            initial={{ x: 20, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            className="absolute -bottom-10 -right-4 md:-right-10 bg-brand-gold p-10 rounded-[2rem] shadow-2xl hidden sm:block"
+          >
+            <p className="text-brand-black font-serif text-3xl italic leading-tight">"Qualidade em <br />cada detalhe"</p>
+          </motion.div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          className="text-center lg:text-left"
         >
-          <div className="mb-8">
-            <Logo className="w-20 h-20" />
+          <div className="mb-12 flex justify-center lg:justify-start">
+            <Logo className="w-24 h-24" />
           </div>
-          <span className="text-brand-gold text-xs uppercase tracking-[0.3em] mb-4 block">Nossa Essência</span>
-          <h2 className="font-serif text-4xl md:text-5xl mb-8 leading-tight">Sobre a La Belle Stores</h2>
-          <p className="text-brand-bege/70 text-lg leading-relaxed mb-10">
-            A La Belle Stores nasceu para oferecer uma curadoria de peças que unem estilo, qualidade e sofisticação. 
-            Mais do que vender produtos, a marca entrega uma experiência elegante, prática e pensada para quem valoriza presença, bom gosto e exclusividade.
+          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] mb-6 block font-bold">Nossa Essência</span>
+          <h2 className="font-serif text-5xl md:text-6xl mb-10 leading-tight">Sobre a <br className="hidden md:block" /> La Belle Stores</h2>
+          <p className="text-brand-bege/60 text-lg leading-relaxed mb-12 max-w-xl mx-auto lg:mx-0">
+            Curadoria de peças que unem estilo, qualidade e sofisticação. 
+            Uma experiência pensada para quem valoriza presença e exclusividade.
           </p>
           
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-10">
             {[
-              { icon: <ShoppingBag size={24} />, label: 'Loja Online' },
+              { icon: <ShoppingBag size={24} />, label: 'Boutique Online' },
               { icon: <User size={24} />, label: 'Atendimento VIP' },
               { icon: <Star size={24} />, label: 'Curadoria Premium' },
               { icon: <ShieldCheck size={24} />, label: 'Compra Segura' },
             ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4">
-                <div className="text-brand-gold">{item.icon}</div>
-                <span className="text-sm uppercase tracking-widest font-medium">{item.label}</span>
+              <div key={idx} className="flex flex-col items-center lg:items-start gap-4">
+                <div className="text-brand-gold bg-brand-white/5 p-4 rounded-2xl">{item.icon}</div>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-brand-white/40">{item.label}</span>
               </div>
             ))}
           </div>
@@ -310,20 +369,20 @@ const About = () => (
 );
 
 const CEOSection = () => (
-  <section className="py-24 bg-brand-black relative">
+  <section className="py-32 bg-brand-black relative">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="flex flex-col md:flex-row items-center gap-12 md:gap-24">
+      <div className="flex flex-col md:flex-row items-center gap-16 md:gap-32">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="w-full md:w-1/3"
+          className="w-full md:w-2/5"
         >
-          <div className="aspect-[3/4] rounded-full overflow-hidden border-2 border-brand-gold/30 p-2">
+          <div className="aspect-[3/4] rounded-[4rem] overflow-hidden border border-brand-gold/20 p-3 bg-brand-graphite shadow-2xl">
             <img 
               src="https://i.postimg.cc/7ZCKWB8L/imagem-2026-04-01-183407928.png" 
               alt="CEO Cryss Silva"
-              className="w-full h-full object-cover rounded-full"
+              className="w-full h-full object-cover rounded-[3.5rem]"
               referrerPolicy="no-referrer"
             />
           </div>
@@ -335,14 +394,15 @@ const CEOSection = () => (
           viewport={{ once: true }}
           className="flex-1 text-center md:text-left"
         >
-          <span className="text-brand-gold text-xs uppercase tracking-[0.3em] mb-4 block">Direção Criativa</span>
-          <h2 className="font-serif text-4xl md:text-5xl mb-6">Curadoria & Direção</h2>
-          <p className="text-brand-bege/70 text-xl italic font-display leading-relaxed mb-8">
-            "Sob a direção de Cryss Silva, a La Belle Stores se destaca por sua seleção cuidadosa de peças, construindo uma identidade visual elegante, atual e sofisticada para seus clientes."
+          <div className="w-12 h-px bg-brand-gold mb-8 mx-auto md:mx-0" />
+          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] mb-6 block font-bold">Direção Criativa</span>
+          <h2 className="font-serif text-5xl md:text-6xl mb-10 leading-tight">Curadoria & <br /> Visão</h2>
+          <p className="text-brand-bege/70 text-2xl italic font-display leading-relaxed mb-12 px-4 md:px-0">
+            "Nossa missão é selecionar peças que traduzam a força e a elegância de cada cliente, criando uma identidade visual única e sofisticada."
           </p>
-          <div>
-            <h4 className="text-brand-white font-serif text-2xl mb-1">Cryss Silva</h4>
-            <p className="text-brand-gold text-xs uppercase tracking-widest">CEO & Curadora</p>
+          <div className="flex flex-col items-center md:items-start">
+            <h4 className="text-brand-white font-serif text-3xl mb-2">Cryss Silva</h4>
+            <p className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-black">CEO & Fundadora</p>
           </div>
         </motion.div>
       </div>
@@ -351,38 +411,54 @@ const CEOSection = () => (
 );
 
 const CategoryGrid = ({ onNavigate }: { onNavigate: (p: Page) => void }) => (
-  <section id="categorias" className="py-24 bg-brand-graphite">
+  <section id="categorias" className="py-32 bg-brand-graphite">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
-        <h2 className="font-serif text-4xl md:text-5xl mb-4">Explore nossas categorias</h2>
-        <p className="text-brand-bege/60 max-w-xl mx-auto">Escolha a categoria ideal e descubra peças selecionadas com elegância, estilo e praticidade.</p>
+      <div className="text-center mb-24">
+        <motion.span 
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-brand-gold text-[10px] uppercase tracking-[0.4em] mb-4 block font-bold"
+        >
+          Curadoria Exclusiva
+        </motion.span>
+        <h2 className="font-serif text-4xl md:text-6xl mb-6">Nossas Coleções</h2>
+        <div className="w-20 h-px bg-brand-gold mx-auto mb-8" />
+        <p className="text-brand-bege/50 max-w-xl mx-auto text-base leading-relaxed">
+          Peças selecionadas para elevar seu estilo em qualquer ocasião.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8">
         {CATEGORIES.map((cat, idx) => (
           <motion.div
             key={cat.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: idx * 0.1 }}
+            transition={{ delay: idx * 0.1, duration: 0.8 }}
             onClick={() => onNavigate(cat.id as Page)}
-            className="group cursor-pointer relative aspect-[4/5] overflow-hidden rounded-2xl"
+            className="group cursor-pointer relative aspect-[3/4] md:aspect-[4/5] overflow-hidden rounded-[2rem] shadow-2xl"
           >
             <img 
               src={cat.image} 
               alt={cat.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute inset-0 bg-brand-black/40 group-hover:bg-brand-black/20 transition-colors" />
-            <div className="absolute inset-0 luxury-gradient opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/20 to-transparent opacity-90 group-hover:opacity-70 transition-opacity duration-500" />
             
-            <div className="absolute bottom-0 left-0 w-full p-8">
-              <h3 className="font-serif text-3xl mb-2 text-brand-white">{cat.title}</h3>
-              <p className="text-brand-bege/80 text-sm mb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">{cat.description}</p>
-              <div className="flex items-center gap-2 text-brand-gold text-xs uppercase tracking-widest font-bold">
-                Explorar <ChevronRight size={16} />
+            <div className="absolute bottom-0 left-0 w-full p-10 md:p-8">
+              <span className="text-brand-gold text-[10px] uppercase tracking-[0.3em] mb-3 block font-bold opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                Ver Detalhes
+              </span>
+              <h3 className="font-serif text-4xl md:text-3xl mb-4 text-brand-white leading-tight">{cat.title}</h3>
+              <p className="text-brand-bege/70 text-sm mb-8 line-clamp-2 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">
+                {cat.description}
+              </p>
+              <div className="flex items-center gap-3 text-brand-gold text-[10px] uppercase tracking-widest font-black">
+                <span className="w-8 h-px bg-brand-gold" />
+                Explorar Coleção
               </div>
             </div>
           </motion.div>
@@ -436,36 +512,40 @@ const CTASection = () => (
 );
 
 const Footer = ({ onNavigate }: { onNavigate: (p: Page) => void }) => (
-  <footer className="bg-brand-black pt-24 pb-12 border-t border-brand-white/5">
+  <footer className="bg-brand-black pt-32 pb-20 border-t border-brand-white/5">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
             <Logo className="w-16 h-16" />
-            <h3 className="font-serif text-3xl gold-text-gradient font-bold">LA BELLE</h3>
+            <div className="flex flex-col">
+              <span className="font-serif text-2xl gold-text-gradient font-black tracking-widest">LA BELLE</span>
+              <span className="text-[8px] tracking-[0.6em] text-brand-white/40 uppercase">Stores</span>
+            </div>
           </div>
-          <p className="text-brand-bege/50 text-sm leading-relaxed">
-            Elegância, estilo e sofisticação em cada detalhe. Sua boutique premium em Maceió - AL.
+          <p className="text-brand-bege/40 text-sm leading-relaxed">
+            Elegância, estilo e sofisticação em cada detalhe. Sua boutique premium digital.
           </p>
           <div className="flex gap-4">
-            <a href="https://instagram.com/la.bellestores" className="w-10 h-10 rounded-full border border-brand-white/10 flex items-center justify-center text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all">
+            <a href={`https://instagram.com/${BRAND.instagram.replace('@', '')}`} className="w-12 h-12 rounded-full border border-brand-white/10 flex items-center justify-center text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all">
               <Instagram size={20} />
             </a>
-            <a href={`https://wa.me/${BRAND.whatsapp}`} className="w-10 h-10 rounded-full border border-brand-white/10 flex items-center justify-center text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all">
+            <a href={`https://wa.me/${BRAND.whatsapp}`} className="w-12 h-12 rounded-full border border-brand-white/10 flex items-center justify-center text-brand-gold hover:bg-brand-gold hover:text-brand-black transition-all">
               <MessageCircle size={20} />
             </a>
           </div>
         </div>
 
         <div>
-          <h4 className="text-brand-white text-xs uppercase tracking-[0.3em] font-bold mb-8">Categorias</h4>
-          <ul className="space-y-4">
+          <h4 className="text-brand-white text-[10px] uppercase tracking-[0.4em] font-black mb-10">Coleções</h4>
+          <ul className="space-y-5">
             {CATEGORIES.map(cat => (
               <li key={cat.id}>
                 <button 
                   onClick={() => onNavigate(cat.id as Page)}
-                  className="text-brand-bege/50 text-sm hover:text-brand-gold transition-colors"
+                  className="text-brand-bege/50 text-sm hover:text-brand-gold transition-colors flex items-center gap-2 group"
                 >
+                  <span className="w-0 h-px bg-brand-gold group-hover:w-4 transition-all" />
                   {cat.title}
                 </button>
               </li>
@@ -474,41 +554,41 @@ const Footer = ({ onNavigate }: { onNavigate: (p: Page) => void }) => (
         </div>
 
         <div>
-          <h4 className="text-brand-white text-xs uppercase tracking-[0.3em] font-bold mb-8">Contato</h4>
-          <ul className="space-y-4 text-sm text-brand-bege/50">
-            <li className="flex items-center gap-3">
-              <MapPin size={16} className="text-brand-gold" />
-              Maceió - AL (Loja Online)
+          <h4 className="text-brand-white text-[10px] uppercase tracking-[0.4em] font-black mb-10">Contato</h4>
+          <ul className="space-y-6 text-sm text-brand-bege/50">
+            <li className="flex items-start gap-4">
+              <MapPin size={18} className="text-brand-gold shrink-0" />
+              <span>{BRAND.location} <br /> (Loja Online)</span>
             </li>
-            <li className="flex items-center gap-3">
-              <MessageCircle size={16} className="text-brand-gold" />
+            <li className="flex items-center gap-4">
+              <MessageCircle size={18} className="text-brand-gold shrink-0" />
               {BRAND.whatsappDisplay}
             </li>
-            <li className="flex items-center gap-3">
-              <User size={16} className="text-brand-gold" />
-              CEO Cryss Silva
+            <li className="flex items-center gap-4">
+              <User size={18} className="text-brand-gold shrink-0" />
+              CEO {BRAND.ceo}
             </li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-brand-white text-xs uppercase tracking-[0.3em] font-bold mb-8">Newsletter</h4>
-          <p className="text-brand-bege/50 text-sm mb-6">Receba novidades e coleções exclusivas.</p>
-          <div className="flex gap-2">
+          <h4 className="text-brand-white text-[10px] uppercase tracking-[0.4em] font-black mb-10">Newsletter</h4>
+          <p className="text-brand-bege/50 text-sm mb-8">Receba novidades e coleções exclusivas.</p>
+          <div className="relative">
             <input 
               type="email" 
-              placeholder="Seu e-mail" 
-              className="bg-brand-graphite border border-brand-white/10 rounded-full px-4 py-2 text-sm w-full focus:outline-none focus:border-brand-gold"
+              placeholder="Seu melhor e-mail" 
+              className="bg-brand-graphite border border-brand-white/10 rounded-2xl px-6 py-4 text-sm w-full focus:outline-none focus:border-brand-gold transition-all"
             />
-            <button className="bg-brand-gold text-brand-black p-2 rounded-full hover:bg-brand-champagne transition-all">
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-gold text-brand-black p-2 rounded-xl hover:bg-brand-champagne transition-all">
               <ChevronRight size={20} />
             </button>
           </div>
         </div>
       </div>
 
-      <div className="pt-8 border-t border-brand-white/5 text-center">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-brand-bege/30">
+      <div className="pt-12 border-t border-brand-white/5 text-center">
+        <p className="text-[10px] uppercase tracking-[0.5em] text-brand-bege/20">
           © 2026 La Belle Stores. Todos os direitos reservados.
         </p>
       </div>
@@ -522,51 +602,73 @@ const CategoryPage = ({ categoryId, onBack }: { categoryId: Page, onBack: () => 
 
   if (categoryId === 'informacoes') {
     return (
-      <div className="pt-32 pb-24 bg-brand-black min-h-screen">
+      <div className="pt-32 pb-32 bg-brand-black min-h-screen">
         <div className="max-w-4xl mx-auto px-6">
-          <button onClick={onBack} className="flex items-center gap-2 text-brand-gold text-xs uppercase tracking-widest font-bold mb-12">
-            <ArrowLeft size={16} /> Voltar
+          <button onClick={onBack} className="flex items-center gap-3 text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-16 group">
+            <div className="w-10 h-10 rounded-full border border-brand-gold/20 flex items-center justify-center group-hover:bg-brand-gold group-hover:text-brand-black transition-all">
+              <ArrowLeft size={16} />
+            </div>
+            Voltar ao Início
           </button>
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-            <h1 className="font-serif text-5xl">Informações</h1>
-            <div className="bg-brand-graphite p-4 rounded-2xl border border-brand-white/5">
-              <Logo className="w-16 h-16" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 mb-20">
+            <div>
+              <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] mb-4 block font-bold">Suporte & Contato</span>
+              <h1 className="font-serif text-5xl md:text-7xl">Informações</h1>
+            </div>
+            <div className="bg-brand-graphite p-6 rounded-3xl border border-brand-white/5 shadow-2xl">
+              <Logo className="w-20 h-20" />
             </div>
           </div>
           
-          <div className="space-y-12">
-            <section className="bg-brand-graphite p-8 rounded-2xl border border-brand-white/5">
-              <h3 className="font-serif text-2xl mb-4 text-brand-gold">Como comprar</h3>
-              <p className="text-brand-bege/70 leading-relaxed">
-                Escolha a categoria desejada, visualize os produtos disponíveis e finalize seu pedido diretamente pelo WhatsApp com atendimento personalizado. Nossa curadoria é focada em oferecer o melhor da moda com praticidade.
-              </p>
-            </section>
+          <div className="space-y-10">
+            {[
+              { title: 'Como comprar', content: 'Escolha a categoria desejada, visualize os produtos disponíveis e finalize seu pedido diretamente pelo WhatsApp com atendimento personalizado. Nossa curadoria é focada em oferecer o melhor da moda com praticidade.' },
+              { title: 'Atendimento', content: 'Atendimento online com suporte direto para encomendas, dúvidas e informações sobre produtos. Estamos disponíveis para ajudar você a encontrar o look perfeito.' },
+            ].map((section, idx) => (
+              <motion.section 
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-brand-graphite p-10 rounded-[2.5rem] border border-brand-white/5 shadow-xl"
+              >
+                <h3 className="font-serif text-3xl mb-6 text-brand-gold italic">{section.title}</h3>
+                <p className="text-brand-bege/70 leading-relaxed text-lg">
+                  {section.content}
+                </p>
+              </motion.section>
+            ))}
 
-            <section className="bg-brand-graphite p-8 rounded-2xl border border-brand-white/5">
-              <h3 className="font-serif text-2xl mb-4 text-brand-gold">Atendimento</h3>
-              <p className="text-brand-bege/70 leading-relaxed">
-                Atendimento online com suporte direto para encomendas, dúvidas e informações sobre produtos. Estamos disponíveis para ajudar você a encontrar o look perfeito.
-              </p>
-            </section>
-
-            <section className="bg-brand-graphite p-8 rounded-2xl border border-brand-white/5">
-              <h3 className="font-serif text-2xl mb-4 text-brand-gold">Contato Oficial</h3>
-              <div className="space-y-4">
-                <p className="flex items-center gap-3 text-brand-bege/70">
-                  <MessageCircle size={20} className="text-brand-gold" />
-                  <strong>WhatsApp:</strong> {BRAND.whatsappDisplay}
-                </p>
-                <p className="flex items-center gap-3 text-brand-bege/70">
-                  <Instagram size={20} className="text-brand-gold" />
-                  <strong>Instagram:</strong> {BRAND.instagram}
-                </p>
-                <p className="flex items-center gap-3 text-brand-bege/70">
-                  <MapPin size={20} className="text-brand-gold" />
-                  <strong>Localização:</strong> Maceió - AL
-                </p>
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-brand-graphite p-10 rounded-[2.5rem] border border-brand-white/5 shadow-xl"
+            >
+              <h3 className="font-serif text-3xl mb-8 text-brand-gold italic">Contato Oficial</h3>
+              <div className="space-y-6">
+                {[
+                  { icon: <MessageCircle size={24} />, label: 'WhatsApp', value: BRAND.whatsappDisplay, link: `https://wa.me/${BRAND.whatsapp}` },
+                  { icon: <Instagram size={24} />, label: 'Instagram', value: BRAND.instagram, link: `https://instagram.com/${BRAND.instagram.replace('@', '')}` },
+                  { icon: <MapPin size={24} />, label: 'Localização', value: BRAND.location },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-6 p-4 rounded-2xl hover:bg-brand-white/5 transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold shrink-0">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-brand-white/40 mb-1">{item.label}</p>
+                      {item.link ? (
+                        <a href={item.link} className="text-xl text-brand-bege hover:text-brand-gold transition-colors font-medium">{item.value}</a>
+                      ) : (
+                        <p className="text-xl text-brand-bege font-medium">{item.value}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </section>
+            </motion.section>
           </div>
         </div>
       </div>
@@ -574,57 +676,73 @@ const CategoryPage = ({ categoryId, onBack }: { categoryId: Page, onBack: () => 
   }
 
   return (
-    <div className="pt-32 pb-24 bg-brand-black min-h-screen">
+    <div className="pt-32 pb-32 bg-brand-black min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-brand-gold text-xs uppercase tracking-widest font-bold mb-12">
-          <ArrowLeft size={16} /> Voltar
+        <button onClick={onBack} className="flex items-center gap-3 text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-16 group">
+          <div className="w-10 h-10 rounded-full border border-brand-gold/20 flex items-center justify-center group-hover:bg-brand-gold group-hover:text-brand-black transition-all">
+            <ArrowLeft size={16} />
+          </div>
+          Voltar ao Início
         </button>
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-          <div>
-            <h1 className="font-serif text-5xl md:text-6xl mb-4">{category?.title}</h1>
-            <p className="text-brand-bege/60 max-w-xl">{category?.description}</p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-24">
+          <div className="max-w-2xl">
+            <motion.span 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-brand-gold text-[10px] uppercase tracking-[0.4em] mb-4 block font-bold"
+            >
+              Coleção Exclusiva
+            </motion.span>
+            <h1 className="font-serif text-5xl md:text-8xl mb-6 leading-tight">{category?.title}</h1>
+            <p className="text-brand-bege/60 text-lg leading-relaxed">{category?.description}</p>
           </div>
-          <div className="flex gap-4">
-            <a href={`https://wa.me/${BRAND.whatsapp}`} className="bg-brand-gold text-brand-black px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold">
-              Encomendar via WhatsApp
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex gap-4"
+          >
+            <a href={`https://wa.me/${BRAND.whatsapp}`} className="w-full md:w-auto bg-brand-gold text-brand-black px-10 py-5 rounded-full text-[10px] uppercase tracking-[0.2em] font-black shadow-xl shadow-brand-gold/20 text-center">
+              Consultar Disponibilidade
             </a>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-10">
           {products.map((product, idx) => (
             <motion.div
               key={product.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
+              transition={{ delay: idx * 0.1, duration: 0.8 }}
               className="group"
             >
-              <div className="aspect-[3/4] overflow-hidden rounded-2xl mb-6 relative">
+              <div className="aspect-[3/4] overflow-hidden rounded-[2.5rem] mb-8 relative shadow-2xl">
                 <img 
                   src={product.image} 
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-brand-black/0 group-hover:bg-brand-black/20 transition-colors" />
-                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <div className="bg-brand-white text-brand-black p-3 rounded-full shadow-xl">
-                      <ArrowUpRight size={20} />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                   <div className="bg-brand-white text-brand-black p-4 rounded-full shadow-2xl">
+                      <ArrowUpRight size={24} />
                    </div>
                 </div>
               </div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-serif text-xl mb-1">{product.name}</h3>
-                  <p className="text-brand-gold text-sm font-medium">{product.price}</p>
+              <div className="flex flex-col gap-4 px-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-serif text-3xl md:text-2xl mb-2 group-hover:text-brand-gold transition-colors">{product.name}</h3>
+                    <p className="text-brand-gold text-sm font-bold tracking-widest uppercase">{product.price}</p>
+                  </div>
                 </div>
                 <a 
                   href={`https://wa.me/${BRAND.whatsapp}?text=Olá! Gostaria de saber mais sobre o produto: ${product.name}`}
-                  className="text-[10px] uppercase tracking-widest font-bold border-b border-brand-gold text-brand-gold pb-1"
+                  className="w-full bg-brand-white/5 border border-brand-white/10 text-brand-white py-5 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-black hover:bg-brand-gold hover:text-brand-black hover:border-brand-gold transition-all text-center"
                 >
-                  Encomendar
+                  Pedir no WhatsApp
                 </a>
               </div>
             </motion.div>
@@ -632,14 +750,15 @@ const CategoryPage = ({ categoryId, onBack }: { categoryId: Page, onBack: () => 
         </div>
 
         {products.length === 0 && (
-          <div className="py-32 text-center border border-dashed border-brand-white/10 rounded-3xl">
-            <p className="text-brand-bege/40 italic">Novidades em breve nesta categoria.</p>
+          <div className="py-40 text-center border border-dashed border-brand-white/10 rounded-[3rem] bg-brand-white/5">
+            <p className="text-brand-bege/40 italic text-xl">Novidades exclusivas em breve.</p>
           </div>
         )}
       </div>
     </div>
   );
 };
+
 
 // --- Main App ---
 
@@ -702,10 +821,41 @@ export default function App() {
 
       <Footer onNavigate={setCurrentPage} />
 
-      {/* Floating WhatsApp Button */}
+      {/* Fixed Bottom Bar for Mobile Conversion */}
+      <div className="fixed bottom-0 left-0 w-full z-50 md:hidden p-4 pointer-events-none">
+        <motion.div 
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          className="bg-brand-black/80 backdrop-blur-2xl border border-brand-white/10 rounded-3xl p-2 flex items-center justify-between shadow-2xl pointer-events-auto"
+        >
+          <button 
+            onClick={() => setCurrentPage('home')}
+            className="p-4 text-brand-white/60 hover:text-brand-gold transition-colors"
+          >
+            <Logo className="w-8 h-8" />
+          </button>
+          
+          <a 
+            href={`https://wa.me/${BRAND.whatsapp}`}
+            className="flex-1 mx-2 bg-brand-gold text-brand-black py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest shadow-xl shadow-brand-gold/20"
+          >
+            <MessageCircle size={18} />
+            Falar no WhatsApp
+          </a>
+
+          <button 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="p-4 text-brand-white/60 hover:text-brand-gold transition-colors"
+          >
+            <ArrowUpRight size={20} className="-rotate-45" />
+          </button>
+        </motion.div>
+      </div>
+
+      {/* Floating WhatsApp Button (Desktop Only) */}
       <a 
         href={`https://wa.me/${BRAND.whatsapp}`}
-        className="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform md:hidden"
+        className="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform hidden md:flex"
         aria-label="WhatsApp"
       >
         <MessageCircle size={28} />
