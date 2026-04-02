@@ -42,24 +42,24 @@ const CATEGORIES = [
 
 const PRODUCTS: Record<string, any[]> = {
   'moda-feminina': [
-    { id: 1, name: 'Vestido Midi Premium', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=600' },
-    { id: 2, name: 'Conjunto Alfaiataria', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1539109132314-34a7735ee29c?auto=format&fit=crop&q=80&w=600' },
-    { id: 3, name: 'Blazer Estruturado', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1548624149-f9b1859aa700?auto=format&fit=crop&q=80&w=600' },
-    { id: 4, name: 'Saia Plissada Lux', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=600' },
+    { id: 1, name: 'Vestido Midi Premium', price: 'Sob consulta', image: 'https://static.ecosweb.com.br/public/produtos/moda-feminina/vestido-midi/vestido-midi-laranja_384712_600_1.webp' },
+    { id: 2, name: 'Conjunto Alfaiataria', price: 'Sob consulta', image: 'https://images.tcdn.com.br/img/img_prod/1186038/conjunto_alfaiataria_395_1_1c8839d10e9e7a30ac04eb2830f2b505.jpeg' },
+    { id: 3, name: 'Blazer Estruturado', price: 'Sob consulta', image: 'https://cdn.sistemawbuy.com.br/arquivos/1615b95691b03f33b1baace056f8544a/produtos/MEI3BU4/blazer-alfaiataria-nina-preta-64727ed15f9b3.jpeg' },
+    { id: 4, name: 'Saia Plissada Lux', price: 'Sob consulta', image: 'https://http2.mlstatic.com/D_NQ_NP_878118-MLB84722655028_052025-O-saia-plissada-premium-4-babados-para-mulher-moderna-elegante.webp' },
   ],
   'calcados': [
     { id: 1, name: 'Scarpin Verniz', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=600' },
     { id: 2, name: 'Sandália Minimal', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&q=80&w=600' },
   ],
   'bolsas': [
-    { id: 1, name: 'Clutch Dourada', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1566150905458-1bf1fd113f0d?auto=format&fit=crop&q=80&w=600' },
+    { id: 1, name: 'Clutch Dourada', price: 'Sob consulta', image: 'https://images.tcdn.com.br/img/img_prod/1180130/bolsa_clutch_linha_luxo_cristal_dourada_2_20250806161539_ca7f7458a0d5.jpg' },
     { id: 2, name: 'Bolsa Couro Premium', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600' },
   ],
   'moda-praia': [
-    { id: 1, name: 'Biquíni Resort', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?auto=format&fit=crop&q=80&w=600' },
+    { id: 1, name: 'Biquíni Resort', price: 'Sob consulta', image: 'https://i.postimg.cc/7YvtzcKp/imagem-2026-04-02-125243907.png' },
   ],
   'moda-masculino': [
-    { id: 1, name: 'Camisa Linho', price: 'Sob consulta', image: 'https://images.unsplash.com/photo-1516257984877-283d991134b0?auto=format&fit=crop&q=80&w=600' },
+    { id: 1, name: 'Camisa Linho', price: 'Sob consulta', image: 'https://baumgarten.cdn.magazord.com.br/img/2025/06/produto/4005/01-camisa-masculina-manga-curta-elegance-slim-algodao-e-linho-areia.jpeg' },
   ]
 };
 
